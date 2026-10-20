@@ -119,5 +119,16 @@ describe('Product', () => {
 
             expect(() => product.decreaseStock(1.5)).toThrow(InvalidProductError)
         })
+
+        describe('Product.restore', () => {
+            it('reconstrói o produto com o id informado, sem gerar outro', () => {
+                const product = Product.restore('id-fixo', 'Mouse', 2450, 7)
+
+                expect(product.id).toBe('id-fixo')
+                expect(product.name).toBe('Mouse')
+                expect(product.priceInCents).toBe(2450)
+                expect(product.stock).toBe(7)
+            })
+        })
     })
 })

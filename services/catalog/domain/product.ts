@@ -58,6 +58,10 @@ export class Product {
         )
     }
 
+    static restore(id: string, name: string, priceInCents: number, stock: number): Product {
+        return new Product(id, name, priceInCents, stock)
+    }
+
     get stock(): number {
         return this._stock
     }
