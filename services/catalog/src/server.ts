@@ -1,7 +1,17 @@
+import pg from 'pg'
 import { buildApp } from './interfaces/http/app'
+import { CreateProduct } from './application/create-product'
+import { PostgresProductRepository } from './infrastructure/postgres-product-repository'
 
-const app = buildApp()
+const pool = new pg.Pool({
+    connectionString:
+        process.env.DATABASE_URL ?? 'postgres://loja:loja@localhost:5432/loja_catalog',
+})
+
+const repository = new PostgresProductRepository(pool)
+const createProduct = new CreateProduct(repository)
+const app = buildApp({ createProduct })
+
 const port = Number(process.env.PORT ?? 3001)
-
 await app.listen({ port, host: '0.0.0.0' })
 console.log(`catalog ouvindo na porta ${port}`)

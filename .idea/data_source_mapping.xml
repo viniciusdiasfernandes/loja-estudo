@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="DataSourcePerFileMappings">
-    <file url="file://$PROJECT_DIR$/services/catalog/infrastructure/postgres-product-repository.ts" value="fed1c2fa-4a56-485e-8c95-ac728c708953" />
-  </component>
-</project>
