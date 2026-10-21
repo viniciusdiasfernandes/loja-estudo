@@ -1,5 +1,6 @@
-import type {Product} from '../domain/product'
+import {InvalidProductIdError, Product} from '../domain/product'
 import type {ProductRepository} from "../application/product-repository";
+import validator from "validator";
 
 export class InMemoryProductRepository implements ProductRepository {
 
@@ -10,6 +11,9 @@ export class InMemoryProductRepository implements ProductRepository {
     }
 
     async findById(id: string): Promise<Product | null> {
+        if (!validator.isUUID(id)) {
+            throw new InvalidProductIdError(`ID inválido: ${id}`)
+        }
         return this.products.get(id) ?? null
     }
 }

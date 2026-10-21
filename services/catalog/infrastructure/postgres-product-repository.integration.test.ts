@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { randomUUID } from 'node:crypto'
 import pg from 'pg'
-import { Product } from '../domain/product'
+import {InvalidProductIdError, Product} from '../domain/product'
 import { PostgresProductRepository } from './postgres-product-repository'
 
 const connectionString =
@@ -39,7 +39,7 @@ describe('PostgresProductRepository', () => {
         expect(found).toBeNull()
     })
 
-    it('Lança um erro quando um ID invalido for fornecido', async () => {
-        await expect(repository.findById('ABC')).rejects.toThrow()
+    it('lança InvalidProductIdError quando o id não é um UUID', async () => {
+        await expect(repository.findById('ABC')).rejects.toThrow(InvalidProductIdError)
     })
 })

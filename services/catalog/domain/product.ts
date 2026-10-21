@@ -1,19 +1,5 @@
 import {randomUUID} from 'node:crypto'
 
-export class InvalidProductError extends Error {
-    constructor(message: string) {
-        super(message)
-        this.name = 'InvalidProductError'
-    }
-}
-
-export class InsufficientStockError extends Error {
-    constructor(message: string) {
-        super(message)
-        this.name = 'InsufficientStockError'
-    }
-}
-
 export class Product {
 
     private constructor(
@@ -78,5 +64,26 @@ export class Product {
             )
         }
         this._stock -= quantity
+    }
+}
+
+export class InvalidProductError extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = 'InvalidProductError'
+    }
+}
+
+export class InsufficientStockError extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = 'InsufficientStockError'
+    }
+}
+
+export class InvalidProductIdError extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = 'InvalidProductIdError'
     }
 }

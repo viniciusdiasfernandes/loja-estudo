@@ -1,5 +1,5 @@
 import type { Pool } from 'pg'
-import { Product } from '../domain/product'
+import {InvalidProductIdError, Product} from '../domain/product'
 import type { ProductRepository } from '../application/product-repository'
 import validator from 'validator'
 
@@ -27,8 +27,8 @@ export class PostgresProductRepository implements ProductRepository {
 
     async findById(id: string): Promise<Product | null> {
 
-        if(!validator.isUUID(id)) {
-            throw new Error('ID invalido');
+        if (!validator.isUUID(id)) {
+            throw new InvalidProductIdError(`ID inválido: ${id}`)
         }
 
         const result = await this.pool.query<ProductRow>(
