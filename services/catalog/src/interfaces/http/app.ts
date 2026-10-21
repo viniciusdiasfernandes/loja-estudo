@@ -4,10 +4,12 @@ import { InvalidProductError } from '../../domain/product'
 import { InvalidProductIdError } from '../../domain/product'
 import { ProductNotFoundError } from '../../application/get-product'
 import type { GetProduct } from '../../application/get-product'
+import type { ListProducts } from '../../application/list-products'
 
 export type AppDependencies = {
     createProduct: CreateProduct
     getProduct: GetProduct
+    listProducts: ListProducts
 }
 
 type CreateProductBody = {
@@ -24,6 +26,18 @@ const createProductSchema = {
             name: { type: 'string' },
             priceInCents: { type: 'integer' },
             stock: { type: 'integer' },
+        },
+    },
+}
+
+type ListProductsQuery = { page?: string; pageSize?: string }
+
+const listProductsSchema = {
+    querystring: {
+        type: 'object',
+        properties: {
+            page: { type: 'string', pattern: '^[1-9][0-9]{0,8}$' },
+            pageSize: { type: 'string', pattern: '^[1-9][0-9]{0,8}$' },
         },
     },
 }
@@ -63,6 +77,19 @@ export function buildApp(deps: AppDependencies) {
             throw error
         }
     })
+
+    app.get<{ Querystring: ListProductsQuery }>(
+        '/products',
+        { schema: listProductsSchema },
+        async (request) => {
+            const { page, pageSize } = request.query
+
+            return deps.listProducts.execute({
+                page: page === undefined ? undefined : Number(page),
+                pageSize: pageSize === undefined ? undefined : Number(pageSize),
+            })
+        },
+    )
 
     return app
 }

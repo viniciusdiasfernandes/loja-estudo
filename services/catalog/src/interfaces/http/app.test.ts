@@ -5,14 +5,22 @@ import { InMemoryProductRepository } from '../../infrastructure/in-memory-produc
 import { randomUUID } from 'node:crypto'
 import { Product } from '../../domain/product'
 import { GetProduct } from '../../application/get-product'
+import { ListProducts } from '../../application/list-products'
 
 function setup() {
     const repository = new InMemoryProductRepository()
     const app = buildApp({
         createProduct: new CreateProduct(repository),
         getProduct: new GetProduct(repository),
+        listProducts: new ListProducts(repository),
     })
     return { app, repository }
+}
+
+async function seedProducts(repository: InMemoryProductRepository, names: string[]) {
+    for (const name of names) {
+        await repository.save(Product.create(name, 1000))
+    }
 }
 
 describe('GET /health', () => {
@@ -98,6 +106,78 @@ describe('GET /products/:id', () => {
 
         const response = await app.inject({ method: 'GET', url: `/products/${id}` })
         console.log(response.body)   // temporário
+        expect(response.statusCode).toBe(400)
+    })
+})
+
+describe('GET /products', () => {
+    it('responde 200 com os padrões, a forma completa e itens ordenados por nome', async () => {
+        const { app, repository } = setup()
+        await seedProducts(repository, ['C', 'A', 'B'])
+
+        const response = await app.inject({ method: 'GET', url: '/products' })
+
+        expect(response.statusCode).toBe(200)
+        const body = response.json()
+        expect(body).toMatchObject({ page: 1, pageSize: 20, total: 3, totalPages: 1 })
+        expect(body.items.map((i: { name: string }) => i.name)).toEqual(['A', 'B', 'C'])
+    })
+
+    it('respeita page e pageSize vindos da URL', async () => {
+        const { app, repository } = setup()
+        await seedProducts(repository, ['A', 'B', 'C', 'D', 'E'])
+
+        const response = await app.inject({ method: 'GET', url: '/products?page=2&pageSize=2' })
+
+        expect(response.statusCode).toBe(200)
+        const body = response.json()
+        expect(body).toMatchObject({ page: 2, pageSize: 2, total: 5, totalPages: 3 })
+        expect(body.items.map((i: { name: string }) => i.name)).toEqual(['C', 'D'])
+    })
+
+    it('página além do fim responde 200 com lista vazia e o total correto', async () => {
+        const { app, repository } = setup()
+        await seedProducts(repository, ['A', 'B', 'C'])
+
+        const response = await app.inject({ method: 'GET', url: '/products?page=10&pageSize=2' })
+
+        expect(response.statusCode).toBe(200)
+        expect(response.json()).toMatchObject({ items: [], total: 3, totalPages: 2 })
+    })
+
+    it('ajusta pageSize acima do teto para 100, sem erro', async () => {
+        const { app } = setup()
+
+        const response = await app.inject({ method: 'GET', url: '/products?pageSize=1000' })
+
+        expect(response.statusCode).toBe(200)
+        expect(response.json().pageSize).toBe(100)
+    })
+
+    it('sem produtos responde 200 com lista vazia e zero páginas', async () => {
+        const { app } = setup()
+
+        const response = await app.inject({ method: 'GET', url: '/products' })
+
+        expect(response.statusCode).toBe(200)
+        expect(response.json()).toEqual({ items: [], page: 1, pageSize: 20, total: 0, totalPages: 0 })
+    })
+
+    it.each([
+        ['page zero', 'page=0'],
+        ['page negativo', 'page=-1'],
+        ['page decimal', 'page=1.5'],
+        ['page texto', 'page=abc'],
+        ['page vazio', 'page='],
+        ['page com zero à esquerda', 'page=01'],
+        ['page grande demais', 'page=1234567890'],
+        ['pageSize zero', 'pageSize=0'],
+        ['page repetido', 'page=1&page=2'],
+    ])('responde 400 quando a query é inválida: %s', async (_descricao, query) => {
+        const { app } = setup()
+
+        const response = await app.inject({ method: 'GET', url: `/products?${query}` })
+
         expect(response.statusCode).toBe(400)
     })
 })

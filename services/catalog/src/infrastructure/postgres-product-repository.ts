@@ -1,6 +1,6 @@
 import type { Pool } from 'pg'
 import {InvalidProductIdError, Product} from '../domain/product'
-import type { ProductRepository } from '../application/product-repository'
+import type { ListParams, ListResult, ProductRepository } from '../application/product-repository'
 import validator from 'validator'
 
 type ProductRow = {
@@ -40,5 +40,27 @@ export class PostgresProductRepository implements ProductRepository {
         if (!row) return null
 
         return Product.restore(row.id, row.name, row.price_in_cents, row.stock)
+    }
+
+    async list({ limit, offset }: ListParams): Promise<ListResult> {
+        const [itemsResult, countResult] = await Promise.all([
+            this.pool.query<ProductRow>(
+                `select id, name, price_in_cents, stock
+         from products
+        order by name asc, id asc
+        limit $1 offset $2`,
+                [limit, offset],
+            ),
+            this.pool.query<{ total: number }>(
+                'select count(*)::int as total from products',
+            ),
+        ])
+
+        return {
+            items: itemsResult.rows.map((row) =>
+                Product.restore(row.id, row.name, row.price_in_cents, row.stock),
+            ),
+            total: countResult.rows[0]?.total ?? 0,
+        }
     }
 }
