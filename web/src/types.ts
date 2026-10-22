@@ -4,3 +4,11 @@ export type Product = {
     priceInCents: number
     stock: number
 }
+
+export type ProductsPage = {
+    items: Product[]
+    page: number
+    pageSize: number
+    total: number
+    totalPages: number
+}
