@@ -13,12 +13,21 @@ const products: Product[] = [
 function App() {
     const [onlyInStock, setOnlyInStock] = useState(false)
     const [search, setSearch] = useState('')
+    const [favoriteIds, setFavoriteIds] = useState<string[]>([])
 
     const visibleProducts = products.filter((product) => {
         const matchesSearch = product.name.toLowerCase().includes(search.toLowerCase())
         const matchesStock = !onlyInStock || product.stock > 0
         return matchesSearch && matchesStock
     })
+
+    function toggleFavorite(id: string) {
+        setFavoriteIds((current) =>
+            current.includes(id)
+                ? current.filter((favoriteId) => favoriteId !== id)
+                : [...current, id],
+        )
+    }
 
     return (
         <main>
@@ -47,7 +56,12 @@ function App() {
                 ) : (
                     <ul>
                         {visibleProducts.map((product) => (
-                            <ProductCard key={product.id} product={product} />
+                            <ProductCard
+                                key={product.id}
+                                product={product}
+                                isFavorite={favoriteIds.includes(product.id)}
+                                onToggleFavorite={() => toggleFavorite(product.id)}
+                            />
                         ))}
                     </ul>
                 )}
