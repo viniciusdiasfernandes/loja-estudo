@@ -5,7 +5,7 @@ export type Product = {
     stock: number
 }
 
-export type ProductsPage = {
+export type ProductsResponse = {
     items: Product[]
     page: number
     pageSize: number
