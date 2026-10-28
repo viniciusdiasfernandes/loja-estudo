@@ -3,6 +3,7 @@ import {ProductCard} from './ProductCard'
 import {Counter} from "./Counter.tsx";
 import {useEffect, useState} from 'react'
 import type {Product, ProductsPage} from './types'
+import { ProductForm } from './ProductForm'
 
 type ProductsState =
     | { status: 'loading' }
@@ -14,6 +15,7 @@ function App() {
     const [search, setSearch] = useState('')
     const [favoriteIds, setFavoriteIds] = useState<string[]>([])
     const [state, setState] = useState<ProductsState>({status: 'loading'})
+    const [reloadCount, setReloadCount] = useState(0)
 
     useEffect(() => {
         const controller = new AbortController()
@@ -38,7 +40,7 @@ function App() {
         load()
 
         return () => controller.abort()
-    }, [])
+    }, [reloadCount])
 
     const products = state.status === 'success' ? state.products : []
 
@@ -59,6 +61,7 @@ function App() {
     return (
         <main>
             <Header title="Loja" subtitle="Uma loja para estudos"/>
+            <ProductForm onCreated={() => setReloadCount((count) => count + 1)} />
             <Counter/>
             <div>
                 <input
