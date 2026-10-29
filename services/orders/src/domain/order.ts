@@ -94,6 +94,13 @@ export class Order {
         return order
     }
 
+    // Reconstrói um pedido que já existe (vindo do banco, por exemplo).
+    // Não gera id novo e não anota OrderPlaced: o pedido não está sendo criado agora.
+    // Confia nos dados guardados, que já passaram pelas regras no create.
+    static restore(id: string, items: readonly OrderItem[], status: OrderStatus): Order {
+        return new Order(id, [...items], status)
+    }
+
     // Devolve os eventos anotados e esvazia a lista, para que o mesmo
     // evento não seja publicado duas vezes.
     pullEvents(): readonly OrderEvent[] {

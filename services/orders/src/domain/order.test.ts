@@ -233,3 +233,50 @@ describe('eventos de domínio', () => {
         ])
     })
 })
+
+describe('Order.restore', () => {
+    const items = [OrderItem.create('p1', 5990, 2), OrderItem.create('p2', 2450, 1)]
+
+    it('reconstrói o pedido com o mesmo id, itens e status', () => {
+        const order = Order.restore('order-123', items, 'PAID')
+
+        expect(order.id).toBe('order-123')
+        expect(order.status).toBe('PAID')
+        expect(order.items).toHaveLength(2)
+        expect(order.totalInCents).toBe(14430)
+    })
+
+    it('não gera eventos (o pedido não está sendo criado agora)', () => {
+        const order = Order.restore('order-123', items, 'PENDING')
+
+        expect(order.pullEvents()).toEqual([])
+    })
+
+    it('não é afetado por mudanças posteriores no array original', () => {
+        const original = [OrderItem.create('p1', 1000, 1)]
+
+        const order = Order.restore('order-123', original, 'PENDING')
+        original.push(OrderItem.create('p2', 500, 1))
+
+        expect(order.items).toHaveLength(1)
+    })
+
+    it('continua obedecendo as transições a partir do status restaurado', () => {
+        const paid = Order.restore('order-123', items, 'PAID')
+        const shipped = Order.restore('order-456', items, 'SHIPPED')
+
+        paid.ship()
+        expect(paid.status).toBe('SHIPPED')
+        expect(() => shipped.cancel()).toThrow(InvalidOrderTransitionError)
+    })
+
+    it('uma transição depois do restore gera só o evento novo', () => {
+        const order = Order.restore('order-123', items, 'PENDING')
+
+        order.confirm()
+
+        expect(order.pullEvents()).toMatchObject([
+            { type: 'OrderConfirmed', orderId: 'order-123' },
+        ])
+    })
+})
