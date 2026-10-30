@@ -93,6 +93,7 @@ describe('PlaceOrder', () => {
             save: async () => {
                 throw new Error('banco fora do ar')
             },
+            findById: async () => null,
         }
         const useCase = new PlaceOrder(failingRepository, publisher)
 

@@ -1,5 +1,5 @@
-import type { OrderEvent } from '../domain/order-events'
+import type { IntegrationEvent } from './integration-events'
 
 export interface EventPublisher {
-    publish(events: readonly OrderEvent[]): Promise<void>
+    publish(events: readonly IntegrationEvent[]): Promise<void>
 }
