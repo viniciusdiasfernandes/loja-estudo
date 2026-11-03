@@ -16,5 +16,23 @@ services:
       timeout: 3s
       retries: 10
 
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: loja-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: loja
+      RABBITMQ_DEFAULT_PASS: loja
+    ports:
+      - "5672:5672"     # porta que o código usa
+      - "15672:15672"   # painel web
+    volumes:
+      - rabbitmqdata:/var/lib/rabbitmq
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
 volumes:
   pgdata:
+  rabbitmqdata:
