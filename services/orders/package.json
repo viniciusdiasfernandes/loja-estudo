@@ -16,6 +16,8 @@
     "dependencies": {
         "fastify": "^5.12.8"
     },
-    "dev": "tsx watch src/server.ts",
-    "start": "tsx src/server.ts"
+    "scripts": {
+        "dev": "tsx watch src/server.ts",
+        "start": "tsx src/server.ts"
+    }
 }

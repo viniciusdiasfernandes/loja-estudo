@@ -4,11 +4,13 @@
     "version": "0.0.0",
     "type": "module",
     "dependencies": {
+        "amqplib": "^2.2.1",
         "fastify": "^5.12.7",
         "pg": "^8.23.1",
         "validator": "^13.15.35"
     },
     "devDependencies": {
+        "@types/amqplib": "^0.10.8",
         "@types/pg": "^8.23.1",
         "@types/validator": "^13.15.10"
     },
